@@ -5,7 +5,7 @@ Repository for initial submission
 
 ## Software dependencies
 
-For the development of the code in this repository we made use of the following `R` packages:
+For the development of the code in this repository we made use of the following `R` packages (in a macOS environment):
 
 - *data.table* version 1.14.0
 - *tidyverse* version 1.3.1
@@ -16,6 +16,8 @@ For the development of the code in this repository we made use of the following 
 - *mgcv* version 1.8-35
 - *readr* version 1.4.0
 - *spdep* version 1.1-11
-- - *reshape2* version 1.4.4
+- *reshape2* version 1.4.4
+
+There is no need for non-standard hardware. 
 
 
