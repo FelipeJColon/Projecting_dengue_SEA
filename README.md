@@ -5,6 +5,11 @@ Repository for initial submission
 
 ## Software dependencies
 
-The code in this repository makes use of the following R packages
+For the development of the code in this repository we made use of the following R packages:
 
-- 
+- *data.table* version 1.14.0
+- *tidyverse* version 1.3.1
+- *lubridate* version 1.7.10
+- *ModelMetrics* version 1.2.2.2
+- *rgdal* version 1.5-23
+- *magrittr* version 2.0.1
