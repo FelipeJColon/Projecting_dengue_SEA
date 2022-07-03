@@ -56,8 +56,8 @@ each of the files with the directory where you (i) have saved the data files and
 output files.
 
 Make sure you pay attention to any **subfoldder** in the code which will be found after the `file.path()` command as in 
-- den_data <- fread(file.path(output, "data",
-                            "dengue_analysis_data_SEA_lshtm.csv")) 
+- `den_data <- fread(file.path(output, "data",
+                            "dengue_analysis_data_SEA_lshtm.csv"))`
                             
 where you will find that the file `dengue_analysis_data_SEA_lshtm.csv` is in subfolder `data` included in the path to `output`.
 
