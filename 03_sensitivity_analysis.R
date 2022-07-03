@@ -12,8 +12,6 @@ require(rgdal)
 require(magrittr)
 require(mgcv)
 require(readr)
-require(ncdf4)
-require(raster)
 require(spdep)
 
 myDir <- "~/Documents/GitLab/dengue/"
