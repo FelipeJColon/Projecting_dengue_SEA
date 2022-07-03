@@ -20,4 +20,45 @@ For the development of the code in this repository we made use of the following 
 
 There is no need for non-standard hardware. 
 
+## Installation
+
+To run the code presented here simply run the `Load_pkgs.R` to install all required packages onto your computer. 
+Then, source each file one at the time. The typicall installation time of all packages is about 7 minutes, but
+times may vary depending on the specification of your computer and the OS.
+
+## Demo
+
+Save data in any directory in your desktop. Then make sure **shapefiles** are in a folder called `shapefiles` and 
+all `.csv` files are stored in a `data` folder.
+
+### Expected output
+
+After running all files you should get the following output
+
+- `00_year_out_cross_validation.R`: No file will be generated as output. It will only print the RMSE values on your screen.
+Estimated running time (3h)
+
+- `01_Bam_model.R`: an `RDS` file named `bam_model_sea.rds` which includes the model specification. Estimated running 
+time: 35 minutes.
+
+- `02_Predictions_bam_model.R`: a suite of `.csv` files named `annual_estimates_model_rcp_sea.csv` where `model` indicates
+the name of the GCM model used and `rcp` indicates the SSP scenario. Estimated running time: 2h.
+
+- `03_sensitivity_analysis.R`: a suite of `.csv` files named `predictions_variable_model_rcp_sea.csv` where `variable` is
+the name of the group of predictors kept constant, `model` indicates the name of the GCM model used and `rcp` indicates 
+the SSP scenario. Estimated running time: 1h.
+
+
+## Instructions for use
+
+To run the code on our data set make sure you replace the lines corresponding to `myDir` and `output` on the preamble of
+each of the files with the directory where you (i) have saved the data files and (ii) where you would like to save 
+output files.
+
+Make sure you pay attention to any **subfoldder** in the code which will be found after the `file.path()` command as in 
+- den_data <- fread(file.path(output, "data",
+                            "dengue_analysis_data_SEA_lshtm.csv")) 
+                            
+where you will find that the file `dengue_analysis_data_SEA_lshtm.csv` is in subfolder `data` included in the path to `output`.
+
 
