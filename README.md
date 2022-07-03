@@ -5,7 +5,7 @@ Repository for initial submission
 
 ## Software dependencies
 
-For the development of the code in this repository we made use of the following R packages:
+For the development of the code in this repository we made use of the following `R` packages:
 
 - *data.table* version 1.14.0
 - *tidyverse* version 1.3.1
