@@ -5,8 +5,6 @@ rm(list = ls())
 # Load packages
 # ----------------------------------------
 require(data.table)
-require(plyr)
-require(dplyr)
 require(tidyverse)
 require(lubridate)
 require(ModelMetrics)

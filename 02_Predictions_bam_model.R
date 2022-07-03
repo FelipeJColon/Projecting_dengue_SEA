@@ -2,10 +2,8 @@
 rm(list = ls())
 
 require(data.table)
-require(plyr)
 require(tidyverse)
 require(lubridate)
-require(dplyr)
 require(reshape2)
 require(raster)
 require(magrittr)
