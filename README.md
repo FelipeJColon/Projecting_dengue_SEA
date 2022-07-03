@@ -16,3 +16,6 @@ For the development of the code in this repository we made use of the following 
 - *mgcv* version 1.8-35
 - *readr* version 1.4.0
 - *spdep* version 1.1-11
+- - *reshape2* version 1.4.4
+
+
