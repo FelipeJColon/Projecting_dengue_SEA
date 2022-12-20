@@ -26,6 +26,9 @@ To run the code presented here simply run the `Load_pkgs.R` to install all requi
 Then, source each file one at the time. The typicall installation time of all packages is about 7 minutes, but
 times may vary depending on the specification of your computer and the OS.
 
+## Data
+Data needed to run this code are available from a public repository at the Centre for Open Science (https://osf.io/85xwq/)
+
 ## Demo
 
 Save data in any directory in your desktop. Then make sure **shapefiles** are in a folder called `shapefiles` and 
