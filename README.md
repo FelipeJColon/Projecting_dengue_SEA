@@ -35,8 +35,10 @@ all `.csv` files are stored in a `data` folder.
 
 After running all files you should get the following output
 
-- `00_blocked_cross_validation.R`: No file will be generated as output. Estimated running time: 3 days using a High 
-Performance Computer if you want to run all possible combinations of covariates.
+- `00_blocked_cross_validation.R`: Generates  a suite of `.csv` files named `metric_equation_x_block_y.csv` 
+where 'metric' indicates the name of the metric used (i.e., MAE, BIC, AIC, Spearman correlation),  `x` 
+indicates the equation being investigated, and `y` the cross-validation block. Estimated running time: 3 days
+using a High Performance Computer if you want to run all possible combinations of covariates.
 
 - `01_Bam_model.R`: an `RDS` file named `bam_model_sea.rds` which includes the model specification. Estimated running 
 time: 35 minutes.
