@@ -149,80 +149,154 @@ corvif(corData)
 # Linear spline function
 rhs <- function(x, threshold) ifelse(x >= threshold, x - threshold, 0)
 
+# Add variables to mix
+myVars2 <- c("tas02 + rhs(tas02,22) + rhs(tas02,29.5)", 
+             "dry02 + rhs(dry02,7) + rhs(dry02,22)", 
+             "urban", "gdp2", 
+             "log(total_arrivals)", "log(flux_rad)")
 
-fx <- total ~ 
+# Add possible combinations
+nvar <- length(myVars2)
+
+myCombs <- unlist(lapply(1:nvar,
+                         function(x){combn(1:nvar, x, 
+                                           simplify=FALSE)}),
+                  recursive=FALSE)
+
+# Baseline model
+fn <- total ~ 
    offset(lpop) +
    s(admin1, bs='mrf', xt=list(nb=mapNb)) +
    s(ID.area, bs="re") +
    s(ID.month, by=ID.country, bs="cr") +
-   s(ID.year, bs="re") +
-   tas02 + rhs(tas02, 22) + rhs(tas02, 29.5) +
-   dry02 + rhs(dry02,7) + rhs(dry02,22) +
-   urban +
-   gdp2 +
-   log(flux_rad) +
-   log(total_arrivals) 
+   s(ID.year, bs="re") 
 
 
-fy <- total ~ 
-   offset(lpop) +
-   s(admin1, bs='mrf', xt=list(nb=mapNb)) +
-   s(ID.area, bs="re") +
-   s(ID.month, by=ID.country, bs="cr") +
-   s(ID.year, bs="re") +
-   tas02 + rhs(tas02, 22) + rhs(tas02, 29.5) +
-   dry02 + rhs(dry02,7) + rhs(dry02,22) +
-   urban + 
-   log(gdp2) +
-   log(flux_rad) +
-   log(total_arrivals) 
+# Generate all possible equations
+equations2 <- sapply(myCombs, function(x){
+  paste("total", "~", "offset(lpop) +",
+        "s(admin1, bs='mrf', xt=list(nb=mapNb)) +",
+        "s(ID.area, bs='re') +",
+        "s(ID.month, by=ID.country, bs='cr') +",
+        "s(ID.year, bs='re') +",
+        paste(myVars2[x], collapse=" + "))
+})
 
-equations <- c(fx, fy)
+# Join all equations
+formulae <- c(fn, equations2)
 
-myRmse1 <- myRmse2 <- vector("list")
 
-for(i in seq_along(years)){
-   cat("\n", i, "\n")
-   
-   for(j in seq_along(equations)){
-      cat("\t", j)
+
+no_cores <- detectCores()
+
+# Define cluster
+cl <- makeCluster(no_cores)
+
+registerDoParallel(detectCores())  
+
+years <- 1:24
+"%ni%" <- Negate("%in%")
+
+# Export vars
+
+x <- foreach(i=0:215, .combine='rbind', .inorder=FALSE) %:%
+  # cat("\n", i, "\n")
+  
+  foreach(j=1:length(formulae), .combine='rbind', .inorder=FALSE) %dopar% {
+    cat("\t", j)
+    
+    try({
       
-      try({
-         train_set <- filter(myData, year!=years[i]) %>%
-            drop_na(total)
-         test_set  <- filter(myData, year==years[i])
-         
-         mod0 <- bam(formula=as.formula(equations[[j]]), 
-                     data=train_set, 
-                     na.action=na.exclude, 
+      my_years  <- years + i
+      train_set <- filter(myData, time%ni%my_years)
+      test_set  <- filter(myData, time%in%my_years)
+      
+      basemod <- bam(formula=as.formula(fn),
+                     data=train_set,
+                     na.action=na.exclude,
                      family=nb(),
                      gamma=2,
                      rho=0.8,
                      drop.unused.levels=FALSE,
                      select=TRUE,
                      method="fREML")
-         
-         test_set$pred0 <- predict.gam(mod0,
-                                       newdata=test_set,
-                                       type='response')
-         
-         test_set %<>% drop_na(total) %>% drop_na(pred0)
-         
-         myRmse1[[j]] <- data.table(equation=j,
-                                    year=i,
-                                    rmse=ModelMetrics::rmse(test_set$total, 
-                                                            test_set$pred0))
-         
-      })
       
-   }
-   myRmse2[[i]] <- rbindlist(myRmse1)
-}
+      mod0 <- bam(formula=as.formula(formulae[[j]]),
+                  data=train_set,
+                  na.action=na.exclude,
+                  family=nb(),
+                  gamma=2,
+                  rho=0.8,
+                  drop.unused.levels=FALSE,
+                  select=TRUE,
+                  method="fREML")
+      
+      
+      train_set$preds <- predict.gam(mod0, 
+                                     type="response")
+      
+      test_set$pred0 <- predict.gam(mod0, newdata=test_set,
+                                    type='response')
+      
+      train_set %<>% drop_na(total) %>% drop_na(preds)
+      
+      test_set %<>% drop_na(total) %>% drop_na(pred0)
+      
+      myMae1 <- ModelMetrics::mae(test_set$total,
+                                    test_set$pred0)
+      aic1 <- AIC(mod0)
+      
+      bic1 <- BIC(mod0)
+      
+      cor_in <- cor(train_set$total,
+                    train_set$preds,
+                    method="spearman")
+      
+      cor_out <- cor(test_set$total,
+                     test_set$pred0,
+                     method="spearman")
+      
+      
+      write.csv(test_set,
+                file.path(myDir, "output_new",
+                          paste0("test_set_equation_", j, "_block_",
+                                 i, ".csv")),
+                row.names=FALSE)
+      
+      write.csv(myMae1,
+                file.path(myDir, "output_new",
+                          paste0("mae_equation_", j, "_block_",
+                                 i, ".csv")),
+                row.names=FALSE)
+      
+      write.csv(aic1,
+                file.path(myDir, "output_new",
+                          paste0("aic_equation_", j, "_block_",
+                                 i, ".csv")),
+                row.names=FALSE)
+      
+      write.csv(bic1,
+                file.path(myDir, "output_new",
+                          paste0("bic_equation_", j, "_block_",
+                                 i, ".csv")),
+                row.names=FALSE)
+      
+      write.csv(cor_in,
+                file.path(myDir, "output_new",
+                          paste0("cor_in_equation_", j, "_block_",
+                                 i, ".csv")),
+                row.names=FALSE)
+      
+      
+      write.csv(cor_out,
+                file.path(myDir, "output_new",
+                          paste0("cor_out_equation_", j, "_block_",
+                                 i, ".csv")),
+                row.names=FALSE)
+      
+      
+    })
+  }
 
 
-Rmse1 <- rbindlist(myRmse2) %>%
-   group_by(equation) %>%
-   dplyr::summarise(rmse=mean(rmse)) %>%
-   arrange(rmse)
 
-Rmse1
