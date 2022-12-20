@@ -35,8 +35,8 @@ all `.csv` files are stored in a `data` folder.
 
 After running all files you should get the following output
 
-- `00_year_out_cross_validation.R`: No file will be generated as output. It will only print the RMSE values on your screen.
-Estimated running time (3h)
+- `00_blocked_cross_validation.R`: No file will be generated as output. Estimated running time: 3 days using a High 
+Performance Computer if you want to run all possible combinations of covariates.
 
 - `01_Bam_model.R`: an `RDS` file named `bam_model_sea.rds` which includes the model specification. Estimated running 
 time: 35 minutes.
