@@ -102,22 +102,34 @@ myvif <- function(mod) {
 
 # Load observation data
 myData <- den_data %>%
-   dplyr::select(admin1, country, date, month, year, total,
-                 tas02, pre02, hur02, wnd02, dry02, wet02, 
-                 sum02, population, popdens, gdp, total_arrivals, 
-                 flux_rad, flux_grav, cluster, urban, qgdp) %>%
-   dplyr::mutate(admin1=factor(admin1),
-                 country=as.factor(country),
-                 cluster=as.factor(cluster),
-                 time=as.numeric(as.factor(date)),
-                 lpop=log(population),
-                 ID.area=factor(as.numeric(as.factor(admin1))),
-                 ID.country=factor(as.numeric(as.factor(country))),
-                 ID.month=as.numeric(as.character(month)),
-                 ID.year=year - min(year) + 1,
-                 ID.year=as.factor(ID.year)) %>%
-   drop_na(pre02) %>%
-   data.table()
+  dplyr::select(admin1, country, date, month, year, total,
+                tas02, pre02, hur02, wnd02, dry02, wet02,
+                sum02, population, popdens, gdp, total_arrivals,
+                flux_rad, flux_grav, cluster) %>%
+  drop_na(pre02) %>%
+  dplyr::mutate(gdp2=gdp/1e6,
+                ssp="historical",
+                admin1=factor(admin1),
+                country=as.factor(country),
+                time=as.numeric(as.factor(date)),
+                lpop=log(population),
+                ID.area=factor(as.numeric(as.factor(admin1))),
+                ID.country=factor(as.numeric(as.factor(country))),
+                ID.month=as.numeric(as.character(month)),
+                ID.year=year - min(year) + 1,
+                ID.year=factor(ID.year)) %>%
+  dplyr::mutate(urban=ifelse(popdens <= 100 , 0,
+                             ifelse(popdens > 100 & popdens <=300, 100,
+                                    ifelse(popdens > 300 & popdens <=1500 , 
+                                           300, 
+                                           ifelse(popdens > 1500 , 1500, 
+                                                  "none")))),
+                urban=factor(urban, levels=c(0,100,300,1500),
+                             labels=c("<= 100",
+                                      "101-300",
+                                      "301-1500",
+                                      "> 1500"))) %>%
+  data.table()
 
 myData$flux_rad[is.na(myData$flux_rad)] <- quantile(myData$flux_rad,
                                                     prob=0.95,
@@ -137,15 +149,6 @@ corvif(corData)
 # Linear spline function
 rhs <- function(x, threshold) ifelse(x >= threshold, x - threshold, 0)
 
-years  <- 2000:2017
-
-myData$tas02b <- rhs(myData$tas02, 22)
-myData$tas02c <- rhs(myData$tas02, 29.5)
-
-myData$dry02b <- rhs(myData$dry02, 7)
-myData$dry02c <- rhs(myData$dry02, 22)
-
-myData$gdp2 <- myData$gdp/1e6
 
 fx <- total ~ 
    offset(lpop) +
